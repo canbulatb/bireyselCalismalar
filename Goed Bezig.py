@@ -49,7 +49,6 @@ while True:
         file=sys.argv[0] + "/files/sound/"+str(index-1)+"Nl.mp3"
         file=file.replace("Goed Bezig.py","")
         playsound(file)
-        
     else:
         file=sys.argv[0] + "/files/sound/"+str(index)+"Nl.mp3"
         file=file.replace("Goed Bezig.py","")
