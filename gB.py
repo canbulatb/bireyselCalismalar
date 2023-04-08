@@ -17,8 +17,7 @@ from PyQt5 import QtCore, QtGui, QtWidgets
 
 pathGbFiles="nt2Tc01"
 lesRandom=False
-
-index=1
+index=0
 dirPath = os.path.dirname(os.path.realpath(__file__))
 print(dirPath)
 #print(sys.argv[0]) #çalışan py dosyasının yolunu gösteriyor. 
@@ -43,6 +42,11 @@ class Ui_Dialog(object):
         self.lblSpreek.setGeometry(QtCore.QRect(10, 20, 381, 71))
         self.lblSpreek.setText("")
         
+        self.lesComboBox=QtWidgets.QComboBox(Dialog)
+        self.lesComboBox.setGeometry(QtCore.QRect(10, 5, 381, 20))
+        self.lesComboBox.currentTextChanged.connect(self.lesComboBoxChange)
+        
+        
         self.lblSpreek2 = QtWidgets.QLabel(Dialog)
         self.lblSpreek2.setGeometry(QtCore.QRect(10, 40, 381, 71))
         self.lblSpreek2.setText("")
@@ -59,6 +63,9 @@ class Ui_Dialog(object):
 
         self.retranslateUi(Dialog)
         QtCore.QMetaObject.connectSlotsByName(Dialog)
+        comboBoxdirectoryAdd(self)
+        #soundPlay(self)
+        callWindow()
 
     def retranslateUi(self, Dialog):
         _translate = QtCore.QCoreApplication.translate
@@ -70,6 +77,43 @@ class Ui_Dialog(object):
     def btnOk_click(self):
         soundPlay(self)
     
+    def lesComboBoxChange(self,text):
+        global index
+        global sheet
+        global wb
+        global lesRandom
+        global loc
+        global locDrs
+        global pathGbFiles
+        
+        try:
+            wb.close()
+        except:
+            pass   
+        #self.qlabel.adjustSize()
+        pathGbFiles=text
+        loc = dirPath+"\\files\\"+pathGbFiles+"\\"+pathGbFiles+".xlsx"
+        locDrs=dirPath+"\\files\\"+pathGbFiles+"\\"
+        wb = xlrd.open_workbook(loc)
+        sheet = wb.sheet_by_name("01")
+        self.lblSpreek.setText(sheet.cell_value(index,1))
+        self.lblSpreek2.setText("")
+        self.edtSchriven.text()
+        index=0
+        soundPlay(self)
+
+        
+
+def callWindow():
+    global index
+    global sheet
+    global wb
+    global lesRandom
+    global loc
+    
+    wb = xlrd.open_workbook(loc)
+    sheet = wb.sheet_by_name("01")
+    pass   
     
      
 
@@ -79,15 +123,18 @@ def soundPlay(self):
         global wb
         global lesRandom
 
+        fileLng2=locDrs+str(index)+"Nl.mp3"
+        fileLng1=locDrs+str(index)+"tr.mp3"
+
+
         answer=self.edtSchriven.text()
+        answer=answer.lower()
         print("answer"+str(answer))
-        if answer==sheet.cell_value(index,2):
+        if answer==sheet.cell_value(index,2).lower():
             self.lblGoedBezig.setText("Goed Bezik")
-            print("Goed Bazig")            
+            print("Goed Bazig")
+            playsound(fileLng2)            
             sonuc=True
-            fileLng2=locDrs+str(index)+"Nl.mp3"
-            #file=file.replace("gB.py","")
-            playsound(fileLng2)
             if lesRandom==True:
                 index=random.randint(1,sheet.nrows)
             else:
@@ -98,8 +145,28 @@ def soundPlay(self):
             self.edtSchriven.setText("")
             fileLng1=locDrs+str(index)+"tr.mp3"
             #file=file.replace("gB.py","")
-            playsound(fileLng1)
-        else:
+           
+            cik=False
+            while cik!=True:
+                try:    
+                    playsound(fileLng1)
+                    cik=True
+                except :  
+                    soundMake(loc,locDrs)
+        elif answer=="":
+                self.lblSpreek.setText(sheet.cell_value(index,1))
+                self.lblSpreek2.setText("")
+                self.edtSchriven.setText("")
+                fileLng1=locDrs+str(index)+"tr.mp3"
+                cik=False
+                while cik!=True:
+                    try:    
+                        playsound(fileLng1)
+                        cik=True
+                    except :  
+                        soundMake(loc,locDrs)
+               
+        else:    
             fileLng2=locDrs+str(index)+"Nl.mp3"
             self.lblSpreek2.setText(sheet.cell_value(index,2))
             print(sheet.cell_value(index,2))
@@ -126,6 +193,17 @@ def soundMake(locPath,savePath):
             nlSound = gTTS(text=nlWord, lang="nl", slow=False)
             nlSound.save(savePath+str(i)+"Nl.mp3")
 
+def comboBoxdirectoryAdd(self):
+    filesDir=dirPath+"\\files\\"
+    p=os.listdir(dirPath+"\\files\\")
+    
+    for i in p:
+        if os.path.isdir(filesDir+i):
+            print(i)
+            self.lesComboBox.addItem(i)
+        else:
+            print(i)
+            
 
 if __name__ == "__main__":
     import sys
@@ -134,13 +212,4 @@ if __name__ == "__main__":
     ui = Ui_Dialog()
     ui.setupUi(Dialog)
     Dialog.show()
-
-    cik=False
-    while cik!=True:
-        try:    
-            fileLng2=locDrs+str(index)+"Tr.mp3"
-            playsound(fileLng2)
-            cik=True
-        except :  
-            soundMake(loc,locDrs)
     sys.exit(app.exec_())
