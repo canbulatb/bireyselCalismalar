@@ -45,10 +45,3 @@ while True:
                 print("*"*30)
                 
             
-            #print(x.values("ad"))
-            # print(x[1])
-            # print(x[2])
-            # print("Öğrencinin ",x)
-            # print("Öğrencinin ",x[2],y[2])
-            # print("Öğrencinin ",x[3],y[3])
-            
